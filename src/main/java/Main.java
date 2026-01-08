@@ -7,7 +7,12 @@ public class Main {
         System.out.print("$ ");
         while ((command = scanner.nextLine()) != null) {
             if (command.equals("exit")) break;
-            System.out.println(command + ": command not found");
+            else if (command.startsWith("echo")) {
+                String echoArg = command.split(" ", 2)[1];
+                System.out.println(echoArg);
+            } else {
+                System.out.println(command + ": command not found");
+            }
             System.out.print("$ ");
         }
     }
