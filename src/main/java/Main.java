@@ -40,6 +40,9 @@ public class Main {
         while ((command = scanner.nextLine()) != null) {
             if (command.startsWith("cd")) {
                 Path changeTo = Path.of(command.split(" ")[1]);
+                if (changeTo.toString().equals("~")) {
+                    changeTo = Path.of(System.getenv("HOME"));
+                }
                 Path potentialPath = currentDir.resolve(changeTo).normalize();
                 if (Files.exists(potentialPath) && Files.isDirectory(potentialPath)) {
                     currentDir = potentialPath;
