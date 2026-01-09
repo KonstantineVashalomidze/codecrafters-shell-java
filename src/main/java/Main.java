@@ -40,8 +40,9 @@ public class Main {
         while ((command = scanner.nextLine()) != null) {
             if (command.startsWith("cd")) {
                 Path changeTo = Path.of(command.split(" ")[1]);
-                if (Files.exists(changeTo) && Files.isDirectory(changeTo)) {
-                    currentDir = currentDir.resolve(changeTo).normalize();
+                Path potentialPath = currentDir.resolve(changeTo).normalize();
+                if (Files.exists(potentialPath) && Files.isDirectory(potentialPath)) {
+                    currentDir = potentialPath;
                 } else if (changeTo.isAbsolute()) {
                     System.out.println("cd: " + changeTo + ": No such file or directory");
                 }
