@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,9 +37,12 @@ public class Main {
         String command;
         System.out.print("$ ");
         while ((command = scanner.nextLine()) != null) {
-            if (command.startsWith("type")) {
+            if (command.equals("pwd")) {
+                String currentPath = Paths.get("").toAbsolutePath().toString();
+                System.out.println(currentPath);
+            } else if (command.startsWith("type")) {
                 String typeArg = command.split(" ", 2)[1];
-                if (Set.of("exit", "echo", "type").contains(typeArg)) {
+                if (Set.of("exit", "echo", "type", "pwd").contains(typeArg)) {
                     System.out.println(typeArg + " is a shell builtin");
                 } else {
                     Path execPath = findExecutable(typeArg);
