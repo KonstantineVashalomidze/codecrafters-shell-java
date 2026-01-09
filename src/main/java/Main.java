@@ -35,15 +35,14 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         String command;
-        String currentDir = Paths.get("").toAbsolutePath().toString();
+        Path currentDir = Paths.get("").toAbsolutePath();
         System.out.print("$ ");
         while ((command = scanner.nextLine()) != null) {
             if (command.startsWith("cd")) {
                 Path changeTo = Path.of(command.split(" ")[1]);
                 if (Files.exists(changeTo) && Files.isDirectory(changeTo)) {
-                    currentDir = changeTo.toString();
-                }
-                else if (changeTo.isAbsolute()) {
+                    currentDir = currentDir.resolve(changeTo).normalize();
+                } else if (changeTo.isAbsolute()) {
                     System.out.println("cd: " + changeTo + ": No such file or directory");
                 }
             } else if (command.equals("pwd")) {
