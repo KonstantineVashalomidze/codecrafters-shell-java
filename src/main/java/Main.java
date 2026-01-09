@@ -44,7 +44,7 @@ public class Main {
                     currentDir = changeTo.toString();
                 }
                 else if (changeTo.isAbsolute()) {
-                    System.out.print("cd: " + changeTo + ": No such file or directory");
+                    System.out.println("cd: " + changeTo + ": No such file or directory");
                 }
             } else if (command.equals("pwd")) {
                 System.out.println(currentDir);
