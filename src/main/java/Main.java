@@ -35,14 +35,22 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         String command;
+        String currentDir = Paths.get("").toAbsolutePath().toString();
         System.out.print("$ ");
         while ((command = scanner.nextLine()) != null) {
-            if (command.equals("pwd")) {
-                String currentPath = Paths.get("").toAbsolutePath().toString();
-                System.out.println(currentPath);
+            if (command.startsWith("cd")) {
+                Path changeTo = Path.of(command.split(" ")[1]);
+                if (Files.exists(changeTo) && Files.isDirectory(changeTo)) {
+                    currentDir = changeTo.toString();
+                }
+                else if (changeTo.isAbsolute()) {
+                    System.out.print("cd: " + changeTo + ": No such file or directory");
+                }
+            } else if (command.equals("pwd")) {
+                System.out.println(currentDir);
             } else if (command.startsWith("type")) {
                 String typeArg = command.split(" ", 2)[1];
-                if (Set.of("exit", "echo", "type", "pwd").contains(typeArg)) {
+                if (Set.of("exit", "echo", "type", "pwd", "cd").contains(typeArg)) {
                     System.out.println(typeArg + " is a shell builtin");
                 } else {
                     Path execPath = findExecutable(typeArg);
