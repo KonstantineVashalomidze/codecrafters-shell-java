@@ -1,4 +1,7 @@
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -6,6 +9,28 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public class Main {
+
+    public static Path findExecutable(String execName) throws IOException {
+        String[] pathsToCheck = System.getenv("PATH")
+                .split(File.pathSeparator);
+
+        for (String p : pathsToCheck) {
+            Path pathToCheck = Path.of(p);
+            if (Files.exists(pathToCheck)) {
+                Stream<Path> stream = Files.list(pathToCheck);
+                for (Path path : stream.toList()) {
+                    if (path.getFileName().toString().equals(execName)
+                            && Files.isExecutable(path)) {
+                        stream.close();
+                        return pathToCheck.resolve(execName);
+                    }
+                }
+                stream.close();
+            }
+        }
+        return null;
+    }
+
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         String command;
@@ -16,39 +41,31 @@ public class Main {
                 if (Set.of("exit", "echo", "type").contains(typeArg)) {
                     System.out.println(typeArg + " is a shell builtin");
                 } else {
-                    String[] pathsToCheck = System.getenv("PATH")
-                            .split(File.pathSeparator);
-                    boolean foundExecutable = false;
-                    for (String p : pathsToCheck) {
-                        Path pathToCheck = Path.of(p);
-                        if (Files.exists(pathToCheck)) {
-                            try (Stream<Path> files = Files.list(pathToCheck)) {
-                                foundExecutable = files.anyMatch(path -> {
-                                    if (path.getFileName().toString().equals(typeArg)
-                                            && Files.isExecutable(path)) {
-                                        System.out.println(typeArg + " is " + pathToCheck.resolve(typeArg));
-                                        return true;
-                                    } else {
-                                        return false;
-                                    }
-                                });
-                            }
-                        }
-                        if (foundExecutable)
-                            break;
-
-                    }
-                    if (!foundExecutable) {
-                        System.out.println(typeArg + ": not found");
-                    }
-
+                    Path execPath = findExecutable(typeArg);
+                    if (execPath != null) System.out.println(typeArg + " is " + execPath);
+                    else System.out.println(typeArg + ": not found");
                 }
             } else if (command.equals("exit")) break;
             else if (command.startsWith("echo")) {
                 String echoArg = command.split(" ", 2)[1];
                 System.out.println(echoArg);
             } else {
-                System.out.println(command + ": command not found");
+                String[] execFileNameWithArgs = command.split(" ");
+                Path execPath = Path.of(execFileNameWithArgs[0]);
+                if (!execPath.isAbsolute()) {
+                    execPath = findExecutable(execFileNameWithArgs[0]);
+                }
+
+                if (execPath != null) { // Probably exec file
+                    ProcessBuilder pb = new ProcessBuilder(execFileNameWithArgs);
+                    pb.inheritIO();
+
+                    Process process = pb.start();
+
+                    process.waitFor();
+                } else {
+                    System.out.println(command + ": command not found");
+                }
             }
             System.out.print("$ ");
         }
