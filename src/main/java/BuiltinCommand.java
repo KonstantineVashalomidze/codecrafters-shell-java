@@ -1,2 +1,3 @@
-public class BuiltinCommand {
+public abstract class BuiltinCommand implements ICommand {
+
 }
