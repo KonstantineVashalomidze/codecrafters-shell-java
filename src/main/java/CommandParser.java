@@ -56,7 +56,7 @@ public class CommandParser {
         }
 
 
-        return new ParsedInput(tokens.getFirst(), tokens.subList(1, tokens.size()).toArray(new String[0]));
+        return new ParsedInput(tokens.getFirst(), tokens.subList(1, tokens.size()));
 
     }
 

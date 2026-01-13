@@ -1,3 +1,5 @@
-public record ParsedInput(String command, String[] args) {
+import java.util.List;
+
+public record ParsedInput(String command, List<String> arguments) {
 
 }

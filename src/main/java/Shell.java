@@ -16,7 +16,7 @@ public class Shell {
 
 
     private void printPrompt() {
-        // environment.getCurrentDirectory() + 
+        // environment.getCurrentDirectory() +
         IO.print("$ ");
     }
 
@@ -37,6 +37,6 @@ public class Shell {
     private void repl(String commandLine) throws IOException, InterruptedException {
         ParsedInput parsedInput = commandParser.parse(commandLine);
         ICommand command = commandFactory.getCommand(parsedInput.command());
-        command.execute(parsedInput.args(), System.in, System.out, System.err, environment);
+        command.execute(parsedInput.arguments(), System.in, System.out, System.err, environment);
     }
 }

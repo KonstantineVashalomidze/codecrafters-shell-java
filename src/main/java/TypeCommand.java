@@ -5,18 +5,19 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class TypeCommand extends BuiltinCommand{
     @Override
-    public void execute(String[] args, InputStream in, OutputStream out, OutputStream err, Environment env) throws IOException {
-        if (args.length != 1) {
+    public void execute(List<String> arguments, InputStream in, OutputStream out, OutputStream err, Environment env) throws IOException {
+        if (arguments.size() != 1) {
             err.write("type takes exactly one argument\n".getBytes(StandardCharsets.UTF_8));
             err.flush();
             return;
         }
 
-        String typeArg = args[0];
+        String typeArg = arguments.getFirst();
         if (CommandFactory.builtinCommands().contains(typeArg)) {
             out.write((typeArg + " is a shell builtin\n").getBytes(StandardCharsets.UTF_8));
         } else {

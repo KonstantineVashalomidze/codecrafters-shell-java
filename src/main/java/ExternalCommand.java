@@ -15,11 +15,11 @@ public class ExternalCommand implements ICommand {
     }
 
     @Override
-    public void execute(String[] args, InputStream in, OutputStream out, OutputStream err, Environment env) throws IOException, InterruptedException {
+    public void execute(List<String> arguments, InputStream in, OutputStream out, OutputStream err, Environment env) throws IOException, InterruptedException {
 
         List<String> command = new ArrayList<>();
         command.add(programName);
-        command.addAll(List.of(args));
+        command.addAll(arguments);
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
