@@ -6,6 +6,7 @@ public class CommandParser {
     private enum State {
         NORMAL,
         IN_QUOTE_SINGLE,
+        IN_QUOTE_DOUBLE,
     }
 
     public ParsedInput parse(String rawInput) {
@@ -26,6 +27,9 @@ public class CommandParser {
                     if (c == '\'') {
                         currentState = State.IN_QUOTE_SINGLE;
                         tokenInProgress = true;
+                    } else if (c == '"') {
+                        currentState = State.IN_QUOTE_DOUBLE;
+                        tokenInProgress = true;
                     } else if (Character.isWhitespace(c)) {
                         if (tokenInProgress) {
                             tokens.add(currentToken.toString());
@@ -39,6 +43,13 @@ public class CommandParser {
                 }
                 case IN_QUOTE_SINGLE -> {
                     if (c == '\'') {
+                        currentState = State.NORMAL;
+                    } else {
+                        currentToken.append(c);
+                    }
+                }
+                case IN_QUOTE_DOUBLE -> {
+                    if (c == '"') {
                         currentState = State.NORMAL;
                     } else {
                         currentToken.append(c);
