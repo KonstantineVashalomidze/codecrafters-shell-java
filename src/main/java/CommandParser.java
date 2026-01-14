@@ -19,7 +19,7 @@ public class CommandParser {
 
         State currentState = State.NORMAL;
         State previousState = State.NORMAL;
-        Set<Character> specialCharacters = Set.of('$', '\'', '"', '\\', '*', ' ');
+        Set<Character> specialCharacters = Set.of('$', '\'', '"', '\\', '*', ' ', 'n');
 
         boolean tokenInProgress = false;
 
