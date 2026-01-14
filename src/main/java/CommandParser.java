@@ -5,9 +5,9 @@ import java.util.Set;
 public class CommandParser {
 
     private enum State {
-        NORMAL,
-        IN_QUOTE_SINGLE,
-        IN_QUOTE_DOUBLE,
+        UNQUOTED,
+        SINGLE_QUOTED,
+        DOUBLE_QUOTED,
         BACKSLASH
     }
 
@@ -17,8 +17,8 @@ public class CommandParser {
 
         StringBuilder currentToken = new StringBuilder();
 
-        State currentState = State.NORMAL;
-        State previousState = State.NORMAL;
+        State currentState = State.UNQUOTED;
+        State previousState = State.UNQUOTED;
         Set<Character> specialCharacters = Set.of('$', '\'', '"', '\\', '*', ' ', 'n');
 
         boolean tokenInProgress = false;
@@ -27,12 +27,12 @@ public class CommandParser {
             char c = rawInput.charAt(i);
 
             switch (currentState) {
-                case NORMAL -> {
+                case UNQUOTED -> {
                     if (c == '\'') {
-                        currentState = State.IN_QUOTE_SINGLE;
+                        currentState = State.SINGLE_QUOTED;
                         tokenInProgress = true;
                     } else if (c == '"') {
-                        currentState = State.IN_QUOTE_DOUBLE;
+                        currentState = State.DOUBLE_QUOTED;
                         tokenInProgress = true;
                     } else if (Character.isWhitespace(c)) {
                         if (tokenInProgress) {
@@ -42,7 +42,7 @@ public class CommandParser {
                         }
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
-                        previousState = State.NORMAL;
+                        previousState = State.UNQUOTED;
                         tokenInProgress = true;
                     }
                     else {
@@ -50,32 +50,39 @@ public class CommandParser {
                         tokenInProgress = true;
                     }
                 }
-                case IN_QUOTE_SINGLE -> {
+                case SINGLE_QUOTED -> {
                     if (c == '\'') {
-                        currentState = State.NORMAL;
+                        currentState = State.UNQUOTED;
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
-                        previousState = State.IN_QUOTE_SINGLE;
+                        previousState = State.SINGLE_QUOTED;
                     } else {
                         currentToken.append(c);
                     }
                 }
-                case IN_QUOTE_DOUBLE -> {
+                case DOUBLE_QUOTED -> {
                     if (c == '"') {
-                        currentState = State.NORMAL;
+                        currentState = State.UNQUOTED;
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
-                        previousState = State.IN_QUOTE_DOUBLE;
+                        previousState = State.DOUBLE_QUOTED;
                     } else {
                         currentToken.append(c);
                     }
                 }
                 case BACKSLASH -> {
-                    if (!specialCharacters.contains(c)) {
+                    if (previousState == State.SINGLE_QUOTED) {
                         currentToken.append('\\');
+                    }  else if (previousState == State.DOUBLE_QUOTED) {
+                        if (!specialCharacters.contains(c)) {
+                            currentToken.append('\\');
+                        }
                     }
                     currentState = previousState;
                     currentToken.append(c);
+
+
+
                 }
                 default -> {
                     // Ignored
