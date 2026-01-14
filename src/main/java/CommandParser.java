@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CommandParser {
 
@@ -18,6 +19,7 @@ public class CommandParser {
 
         State currentState = State.NORMAL;
         State previousState = State.NORMAL;
+        Set<Character> specialCharacters = Set.of('$', '`', '"', '\\');
 
         boolean tokenInProgress = false;
 
@@ -70,7 +72,12 @@ public class CommandParser {
                     }
                 }
                 case BACKSLASH -> {
-                    currentState = previousState;
+                    if (specialCharacters.contains(c)) {
+                        currentState = previousState;
+                    } else {
+                        currentState = State.NORMAL;
+                        currentToken.append('\\');
+                    }
                     currentToken.append(c);
                 }
                 default -> {
