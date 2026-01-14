@@ -7,6 +7,7 @@ public class CommandParser {
         NORMAL,
         IN_QUOTE_SINGLE,
         IN_QUOTE_DOUBLE,
+        BACKSLASH
     }
 
     public ParsedInput parse(String rawInput) {
@@ -16,6 +17,7 @@ public class CommandParser {
         StringBuilder currentToken = new StringBuilder();
 
         State currentState = State.NORMAL;
+        State previousState = State.NORMAL;
 
         boolean tokenInProgress = false;
 
@@ -36,7 +38,11 @@ public class CommandParser {
                             currentToken.setLength(0);
                             tokenInProgress = false;
                         }
-                    } else {
+                    } else if (c == '\\') {
+                        currentState = State.BACKSLASH;
+                        tokenInProgress = true;
+                    }
+                    else {
                         currentToken.append(c);
                         tokenInProgress = true;
                     }
@@ -44,6 +50,10 @@ public class CommandParser {
                 case IN_QUOTE_SINGLE -> {
                     if (c == '\'') {
                         currentState = State.NORMAL;
+                    } else if (c == '\\') {
+                        currentState = State.BACKSLASH;
+                        previousState = State.IN_QUOTE_SINGLE;
+
                     } else {
                         currentToken.append(c);
                     }
@@ -51,9 +61,17 @@ public class CommandParser {
                 case IN_QUOTE_DOUBLE -> {
                     if (c == '"') {
                         currentState = State.NORMAL;
+                    } else if (c == '\\') {
+                        currentState = State.BACKSLASH;
+                        previousState = State.IN_QUOTE_DOUBLE;
+
                     } else {
                         currentToken.append(c);
                     }
+                }
+                case BACKSLASH -> {
+                    currentState = previousState;
+                    currentToken.append(c);
                 }
                 default -> {
                     // Ignored
