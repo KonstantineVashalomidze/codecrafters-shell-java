@@ -96,7 +96,28 @@ public class CommandParser {
         }
 
 
-        return new ParsedInput(tokens.getFirst(), tokens.subList(1, tokens.size()));
+
+        String outputFile = null;
+        int redirectIndex = -1;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).equals(">")) {
+                redirectIndex = i;
+                if (i + 1 < tokens.size()) {
+                    outputFile = tokens.get(i + 1);
+                }
+                break;
+            }
+        }
+
+        if (redirectIndex != -1) {
+            if (redirectIndex + 1 < tokens.size()) {
+                tokens.remove(redirectIndex + 1);
+            }
+            tokens.remove(redirectIndex);
+        }
+
+        return new ParsedInput(tokens.getFirst(), tokens.subList(1, tokens.size()), outputFile);
 
     }
 
