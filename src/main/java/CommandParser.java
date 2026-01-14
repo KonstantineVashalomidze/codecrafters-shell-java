@@ -19,7 +19,7 @@ public class CommandParser {
 
         State currentState = State.NORMAL;
         State previousState = State.NORMAL;
-        Set<Character> specialCharacters = Set.of('$', '`', '"', '\\');
+        Set<Character> specialCharacters = Set.of('$', '\'', '"', '\\', '*', ' ');
 
         boolean tokenInProgress = false;
 
@@ -42,6 +42,7 @@ public class CommandParser {
                         }
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
+                        previousState = State.NORMAL;
                         tokenInProgress = true;
                     }
                     else {
@@ -55,7 +56,6 @@ public class CommandParser {
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
                         previousState = State.IN_QUOTE_SINGLE;
-
                     } else {
                         currentToken.append(c);
                     }
@@ -66,18 +66,15 @@ public class CommandParser {
                     } else if (c == '\\') {
                         currentState = State.BACKSLASH;
                         previousState = State.IN_QUOTE_DOUBLE;
-
                     } else {
                         currentToken.append(c);
                     }
                 }
                 case BACKSLASH -> {
-                    if (specialCharacters.contains(c)) {
-                        currentState = previousState;
-                    } else {
-                        currentState = State.NORMAL;
+                    if (!specialCharacters.contains(c)) {
                         currentToken.append('\\');
                     }
+                    currentState = previousState;
                     currentToken.append(c);
                 }
                 default -> {
