@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class ExternalCommand implements ICommand {
 
@@ -22,14 +23,42 @@ public class ExternalCommand implements ICommand {
         command.addAll(arguments);
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
-
         processBuilder.directory(env.getCurrentDirectory().toFile());
 
-        processBuilder.inheritIO();
-
-        try {
+        try (ExecutorService executorService = Executors.newFixedThreadPool(3)) {
             Process process = processBuilder.start();
-            process.waitFor();
+            try {
+                Future<?> inputFuture = executorService.submit(() -> {
+                    try (OutputStream processOut = process.getOutputStream()) {
+                        in.transferTo(processOut);
+                    } catch (IOException e) {}
+                });
+
+                Future<?> outputFuture = executorService.submit(() -> {
+                    try {
+                        InputStream inputStream = process.getInputStream();
+                        inputStream.transferTo(out);
+                    } catch (IOException e) {}
+                });
+
+                Future<?> errorFuture = executorService.submit(() -> {
+                    try {
+                        InputStream errorStream = process.getErrorStream();
+                        errorStream.transferTo(err);
+                    } catch (IOException e) {}
+                });
+
+                int exitCode = process.waitFor();
+
+                inputFuture.get();
+                outputFuture.get();
+                errorFuture.get();
+
+            } catch (ExecutionException e) {
+
+            }
+
+
         } catch (IOException e) {
             String errorMessage = programName + ": command not found\n";
             err.write(errorMessage.getBytes(StandardCharsets.UTF_8));
