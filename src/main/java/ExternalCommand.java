@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,46 +26,38 @@ public class ExternalCommand implements ICommand {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(env.getCurrentDirectory().toFile());
 
-        try (ExecutorService executorService = Executors.newFixedThreadPool(3)) {
-            Process process = processBuilder.start();
-            try {
-                Future<?> inputFuture = executorService.submit(() -> {
-                    try (OutputStream processOut = process.getOutputStream()) {
-                        in.transferTo(processOut);
-                    } catch (IOException e) {}
-                });
+        Process process = processBuilder.start();
 
-                Future<?> outputFuture = executorService.submit(() -> {
+        Thread outThread = Thread.ofVirtual()
+                .start(() -> {
                     try {
-                        InputStream inputStream = process.getInputStream();
-                        inputStream.transferTo(out);
-                    } catch (IOException e) {}
+                        process.getInputStream().transferTo(out);
+                    } catch (IOException _) {
+                    }
                 });
 
-                Future<?> errorFuture = executorService.submit(() -> {
+        Thread errThread = Thread.ofVirtual()
+                .start(() -> {
                     try {
-                        InputStream errorStream = process.getErrorStream();
-                        errorStream.transferTo(err);
-                    } catch (IOException e) {}
+                        process.getErrorStream().transferTo(err);
+                    } catch (IOException _) {
+                    }
                 });
 
-                int exitCode = process.waitFor();
 
-                inputFuture.get();
-                outputFuture.get();
-                errorFuture.get();
+        Thread inThread = Thread.ofVirtual()
+                .start(() -> {
+                    try (OutputStream processOutputStream = process.getOutputStream()) {
+                        if (in != null) {
+                            in.transferTo(processOutputStream);
+                        }
+                    } catch (IOException _) {
+                    }
+                });
 
-            } catch (ExecutionException e) {
+        process.waitFor();
 
-            }
-
-
-        } catch (IOException e) {
-            String errorMessage = programName + ": command not found\n";
-            err.write(errorMessage.getBytes(StandardCharsets.UTF_8));
-            err.flush();
-        }
-
-
+        outThread.join();
+        errThread.join();
     }
 }
