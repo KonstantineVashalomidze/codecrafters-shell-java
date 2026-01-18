@@ -26,13 +26,19 @@ public class ExternalCommand implements ICommand {
         if (in == System.in) {
             processBuilder.redirectInput(ProcessBuilder.Redirect.INHERIT);
         }
-
-        Process process = processBuilder.start();
+        Process process;
+        try {
+            process = processBuilder.start();
+        } catch (IOException e) {
+            out.write((programName + ": command not found").getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            return;
+        }
 
         Thread outThread = Thread.ofVirtual().start(() -> {
             try {
                 process.getInputStream().transferTo(out);
-            } catch (IOException _) { }
+            } catch (IOException _) {  }
         });
 
         Thread errThread = Thread.ofVirtual().start(() -> {
