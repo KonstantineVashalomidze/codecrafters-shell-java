@@ -30,7 +30,7 @@ public class ExternalCommand implements ICommand {
         try {
             process = processBuilder.start();
         } catch (IOException e) {
-            out.write((programName + ": command not found").getBytes(StandardCharsets.UTF_8));
+            out.write((programName + ": command not found\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
             return;
         }
