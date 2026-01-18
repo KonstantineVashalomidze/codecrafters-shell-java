@@ -4,7 +4,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class ExitCommand extends BuiltinCommand{
+public class ExitCommand extends BuiltinCommand {
     @Override
     public void execute(List<String> arguments, InputStream in, OutputStream out, OutputStream err, Environment env) throws IOException {
         if (!arguments.isEmpty()) {
